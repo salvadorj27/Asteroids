@@ -5,7 +5,7 @@
 // C++ STL
 #include <string>
 #include <list>
-
+#include "Ship.hpp"
 // Asteroids
 #include "SDLEvent.hpp"
 #include "TimeManager.hpp"
@@ -39,7 +39,8 @@ namespace Engine
 		void Execute						( );
 		bool Init							( );
 		void Update							( );
-		void Render							( );
+		void Render	                        ( );
+		void ship_render					( );
 	private:
 		/* =============================================================
 		 * PRIVATE FUNCTIONS
@@ -66,7 +67,7 @@ namespace Engine
 		SDL_GLContext						m_context;
 		GameState::State					m_state;
 		Engine::TimeManager*				m_timer;
-
+		ship *m_ship;
 	};
 }
 #endif /* App_HPP */
