@@ -1,10 +1,22 @@
 #include "Ship.hpp"
+#include "App.hpp"
 
 #include <gl\GL.h>
+
+
 #include <iostream>
+#include <cmath>
 
 namespace Engine
 {
+    
+    const float PI = 3.141592653;
+    const float MAX_VELOCITY = 500.0f;
+    const float THRUST = 15.0f;
+    const float DRAG_FORCE = 0.999f;
+    const float ANGLE_OFFSET = 90.0f;
+
+    
     inline float wrap(float x, float min, float max)
     {
         if(x < min) return max - (min - x);
@@ -12,14 +24,25 @@ namespace Engine
         return x;
     }
 
-    Ship::Ship()
-        : m_position(Math::Vector2::Origin)
-    {
+    Ship::Ship(App* parent)
+        : m_position(Math::Vector2::Origin)   
+        , m_velocity(Math::Vector2::Origin)  
+        , m_angle(0.0f)     
+        , m_rotation(250.0f)
+        , m_mass(1.0f)
+        , m_parent(parent) 
+    {        
         std::cout << "Construction of ship\n";
+        ChangeShip();
     }
 
-    Ship::Ship(float _x, float _y)
-        : m_position(_x, _y)
+    Ship::Ship(App* parent, float _x, float _y)
+        : m_position(_x, _y)    
+        , m_velocity(Math::Vector2::Origin)  
+        , m_angle(0.0f)     
+        , m_rotation(250.0f)
+        , m_mass(1.0f)    
+        , m_parent(parent)
     {
         std::cout << "Construction of ship\n";
     }
@@ -29,78 +52,102 @@ namespace Engine
         std::cout << "Destruction of ship\n";
     }
 
-    void Ship::Move(float _x, float _y)
+    void Ship::MoveUp()
     {
-        float x = m_position.x + _x;
-        float y = m_position.y + _y;
+        ApplyImpulse(Math::Vector2(THRUST));
+    }
 
-        // TODO: RR: Move this OUT!
-        float width = 1136.0f;
-        float height = 640.0f;
+    void Ship::RotateLeft( float deltaTime )
+    {        
+        m_angle += m_rotation * deltaTime;
+    }
 
-        float min_width = -width / 2.0f;
-        float max_width = width / 2.0f;
+    void Ship::RotateRight( float deltaTime )
+    {        
+        m_angle -= m_rotation * deltaTime;
+    }
 
-        float min_height = -height / 2.0f;
-        float max_height = height / 2.0f;
+    void Ship::ApplyDrag(Math::Vector2 force)
+    {
+        m_velocity.x *= force.x;
+        m_velocity.y *= force.y;
+    }
 
-        m_position.x = wrap(x, min_width, max_width);
-        m_position.y = wrap(y, min_height, max_height);
+    void Ship::ApplyImpulse(Math::Vector2 impulse)
+    {
+        if(m_mass > 0)
+        {
+            m_velocity.x += (impulse.x / m_mass) * cosf((m_angle + ANGLE_OFFSET) * (PI / 180));
+            m_velocity.y += (impulse.y / m_mass) * sinf((m_angle + ANGLE_OFFSET) * (PI / 180));
+        }
+    }
+
+    void Ship::Update(float deltaTime)
+    {
+        
+        float speed = 
+            std::fabs(m_velocity.Length());
+
+        
+        if(speed > MAX_VELOCITY)
+        {
+            m_velocity.x = (m_velocity.x / speed) * MAX_VELOCITY;
+            m_velocity.y = (m_velocity.y / speed) * MAX_VELOCITY;
+        }
+
+        
+        m_currentSpeed = speed;
+        m_position.x += m_velocity.x * deltaTime;
+        m_position.y += m_velocity.y * deltaTime;
+
+        
+        ApplyDrag(Math::Vector2(DRAG_FORCE));
+
+        
+        float halfWidth = m_parent->GetWidth() / 2.0f;
+        float halfHeight = m_parent->GetHeight() / 2.0f;
+
+        float worldMinX = -halfWidth;
+        float worldMaxX = halfWidth;
+
+        float worldMinY = -halfHeight;
+        float worldMaxY = halfHeight;
+
+        m_position.x = wrap(m_position.x, worldMinX, worldMaxX);
+        m_position.y = wrap(m_position.y, worldMinY, worldMaxY);
+    }
+
+    void Ship::ChangeShip()
+    {
+        m_points.push_back(Math::Vector2(12.0f, 0.0f));
+        m_points.push_back(Math::Vector2(12.0f, 51.0f));
+        m_points.push_back(Math::Vector2(39.0f, -9.0f));
+        m_points.push_back(Math::Vector2(39.0f, -24.0f));
+        m_points.push_back(Math::Vector2(12.0f, -36.0f));
+        m_points.push_back(Math::Vector2(-12.0f, -36.0f));
+        m_points.push_back(Math::Vector2(-39.0f, -24.0f));
+        m_points.push_back(Math::Vector2(-39.0f, -9.0f));
+        m_points.push_back(Math::Vector2(-12.0f, 51.0f));
+        m_points.push_back(Math::Vector2(-12.0f, 0.0f));
+        m_points.push_back(Math::Vector2(-6.0f, 0.0f));
+        m_points.push_back(Math::Vector2(-6.0f, 6.0f));
+        m_points.push_back(Math::Vector2(-3.0f, 4.5f));
+        m_points.push_back(Math::Vector2(3.0f, 4.5f));
+        m_points.push_back(Math::Vector2(6.0f, 6.0f));
+        m_points.push_back(Math::Vector2(6.0f, 0.0f));
     }
 
     void Ship::Render()
     {
         glLoadIdentity();
-
         glTranslatef(m_position.x, m_position.y, 0.0);
-	
-	    
-		// glBegin(GL_QUADS);		
-		// 	glVertex2f(50.0, 50.0);
-        //  glVertex2f(50.0, -50.0);
-        //  glVertex2f(-50.0, -50.0);
-        //  glVertex2f(-50.0, 50.0);	
-		// glEnd();
-
-		// glBegin(GL_TRIANGLES);
-		// 	glVertex3f(-50.0, -50.0, 0.0);
-		// 	glVertex3f( 0.0,  50.0, 0.0);
-		// 	glVertex3f( 50.0, -50.0, 0.0);
-		// glEnd();
-
-		// glBegin(GL_LINE_LOOP);
-		// 	glVertex3f(-50.0, -50.0, 0.0);
-		// 	glVertex3f( 0.0,  50.0, 0.0);
-		// 	glVertex3f( 50.0, -50.0, 0.0);
-		// glEnd();
-
-		// glBegin(GL_LINE_LOOP);
-            // glVertex2f(50.0, 50.0);
-            // glVertex2f(50.0, -50.0);
-            // glVertex2f(-50.0, -50.0);
-            // glVertex2f(-50.0, 50.0);			
-		// glEnd();
-
-		glBegin(GL_LINE_LOOP);
-			glVertex2f(12.0, 0.0);
-			glVertex2f(12.0, 51.0);
-			glVertex2f(39.0, -9.0);
-			glVertex2f(39.0, -24.0);
-			glVertex2f(12.0, -36.0);
-			glVertex2f(-12.0, -36.0);
-			glVertex2f(-39.0, -24.0);
-			glVertex2f(-39.0, -9.0);
-			glVertex2f(-12.0, 51.0);
-			glVertex2f(-12.0, 0.0);
-			glVertex2f(-6.0, 0.0);
-			glVertex2f(-6.0, 6.0);
-			glVertex2f(-3.0, 4.5);
-			glVertex2f(3.0, 4.5);
-			glVertex2f(6.0, 6.0);
-			glVertex2f(6.0, 0.0);
-		glEnd(); 
-
-	    
+        glRotatef(m_angle, 0.0f, 0.0f, 1.0f);
+        glBegin(GL_LINE_LOOP);
+            std::vector<Math::Vector2>::iterator it = m_points.begin();
+            for(; it != m_points.end(); ++it)
+            {
+                glVertex2f((*it).x, (*it).y);
+            }
+        glEnd();
     }
-
 }
