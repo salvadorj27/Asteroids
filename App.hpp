@@ -18,9 +18,7 @@ namespace Engine
     class App : public SDLEvent
     {
         public:
-            /* =============================================================
-            * ENUMERATORS
-            * ============================================================= */
+
             struct GameState
             {
                 enum State
@@ -34,23 +32,18 @@ namespace Engine
                 };
             };
 
-            /* =============================================================
-            * CONSTRUCTORS/DESTRUCTORS
-            * ============================================================= */
+
             App( const std::string& title, const int width, const int height );
             ~App();
 
-           /* =============================================================
-            * PUBLIC FUNCTIONS
-            * ============================================================= */
             void Execute         ( );
             bool Init            ( );
             void Update          ( );
             void Render          ( );
+            int  GetWidth        ( ) { return m_width; }
+            int  GetHeight       ( ) { return m_height; }
         private:
-            /* =============================================================
-            * PRIVATE FUNCTIONS
-            * ============================================================= */
+
             bool SDLInit         ( );
             bool GlewInit        ( );
             void SetupViewPort   ( );
@@ -60,9 +53,6 @@ namespace Engine
             void OnKeyDown       ( SDL_KeyboardEvent keyBoardEvent ) override;
             void OnKeyUp         ( SDL_KeyboardEvent keyBoardEvent ) override;
 
-           /* =============================================================
-            * MEMBER
-            * ============================================================= */
             int                  m_width;
 		    int					 m_height;
 		    int					 m_nUpdates;
@@ -73,8 +63,8 @@ namespace Engine
 		    GameState::State	 m_state;
             Engine::TimeManager* m_timer;
             Engine::Ship*        m_ship;
-            Engine::Asteroid*        m_asteroid;
+            Engine::Asteroid*    m_asteroid;
     };
 }
 
-#endif /* APP_HPP */
+#endif 

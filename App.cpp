@@ -24,22 +24,23 @@ namespace Engine
 	{
 		m_state = GameState::UNINITIALIZED;
 		m_lastFrameTime = m_timer->GetElapsedTimeInSeconds();
-		m_ship = new Ship;
-		m_asteroid = new Asteroid;
+
+		m_ship = new Engine::Ship(this);
+		// m_asteroid = new Asteroid;
 	}
 
 	App::~App()
 	{
 		CleanupSDL();
 
-        // Removes timer allocation
+        
         delete m_timer;
 
-		// Removes ship allocation
+		
 		delete m_ship;
 
 		// Removes asteroid
-		delete m_asteroid;
+		// delete m_asteroid;
 	}
 
 	void App::Execute()
@@ -55,14 +56,13 @@ namespace Engine
 		SDL_Event event;
 		while (m_state == GameState::RUNNING)
 		{
-			// Input polling
-			//
+		
 			while (SDL_PollEvent(&event))
 			{
 				OnEvent(&event);
 			}
 
-			//
+			
 			Update();
 			Render();
 		}
@@ -70,21 +70,19 @@ namespace Engine
 
 	bool App::Init()
 	{
-		// Init the external dependencies
-		//
+	
 		bool success = SDLInit() && GlewInit();
 		if (!success)
 		{
 			m_state = GameState::INIT_FAILED;
+			SDL_Log("Game INIT failed.");
 			return false;
 		}
 
-		// Setup the viewport
-		//
+	
 		SetupViewPort();
 
-		// Change game state
-		//
+		
 		m_state = GameState::INIT_SUCCESSFUL;
 
 		return true;
@@ -97,19 +95,17 @@ namespace Engine
 		{
 		case SDL_SCANCODE_W:
 			SDL_Log("Going up");	
-			m_ship->Move(0.0f, MOVE_UNIT);		
+			m_ship->MoveUp();	
 			break;
 		case SDL_SCANCODE_A:
 			SDL_Log("Going left");
-			m_ship->Move(-MOVE_UNIT, 0.0f);
+			m_ship->RotateLeft(DESIRED_FRAME_TIME);
 			break;
-		case SDL_SCANCODE_S:
-			SDL_Log("Going down");
-			m_ship->Move(0.0f, -MOVE_UNIT);	
+		case SDL_SCANCODE_S:			
 			break;
 		case SDL_SCANCODE_D:
 			SDL_Log("Going right");
-			m_ship->Move(MOVE_UNIT, 0.0f);
+			m_ship->RotateRight(DESIRED_FRAME_TIME);
 			break;
 		default:
 			SDL_Log("%S was pressed.", keyBoardEvent.keysym.scancode);
@@ -125,7 +121,7 @@ namespace Engine
 			OnExit();
 			break;
 		default:
-			//DO NOTHING
+			
 			break;
 		}
 	}
@@ -134,15 +130,15 @@ namespace Engine
 	{
 		double startTime = m_timer->GetElapsedTimeInSeconds();
 
-		// Update code goes here
-		//
+		
+		m_ship->Update(DESIRED_FRAME_TIME);
 
 		double endTime = m_timer->GetElapsedTimeInSeconds();
 		double nextTimeFrame = startTime + DESIRED_FRAME_TIME;
 
 		while (endTime < nextTimeFrame)
 		{
-			// Spin lock
+		
 			endTime = m_timer->GetElapsedTimeInSeconds();
 		}
 
@@ -156,17 +152,16 @@ namespace Engine
 		glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Render code goes here
+		
 		m_ship->Render();
-		m_asteroid->Render();
+		// m_asteroid->Render();
 		
 		SDL_GL_SwapWindow(m_mainWindow);
 	}
 
 	bool App::SDLInit()
 	{
-		// Initialize SDL's Video subsystem
-		//
+		
 		if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		{
 			SDL_Log("Failed to init SDL");
@@ -199,7 +194,7 @@ namespace Engine
 		m_context = SDL_GL_CreateContext(m_mainWindow);
 		SDL_GL_MakeCurrent(m_mainWindow, m_context);
 
-		// Make double buffer interval synced with vertical scanline refresh
+		
 		SDL_GL_SetSwapInterval(0);
 
 		return true;
@@ -207,26 +202,20 @@ namespace Engine
 
 	void App::SetupViewPort()
 	{
-		// Defining ortho values
-		//
+
 		float halfWidth = m_width * 0.5f;
 		float halfHeight = m_height * 0.5f;
 
-		// Set viewport to match window
-		//
+
 		glViewport(0, 0, m_width, m_height);
 
-		// Set Mode to GL_PROJECTION
-		//
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		// Set projection MATRIX to ORTHO
-		//
+
 		glOrtho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1);
 
-		// Setting Mode to GL_MODELVIEW
-		//
+
 		glMatrixMode(GL_MODELVIEW);
 	}
 
@@ -244,8 +233,7 @@ namespace Engine
 
 	void App::CleanupSDL()
 	{
-		// Cleanup
-		//
+
 		SDL_GL_DeleteContext(m_context);
 		SDL_DestroyWindow(m_mainWindow);
 
@@ -254,8 +242,7 @@ namespace Engine
 
 	void App::OnResize(int width, int height)
 	{
-		// TODO: Add resize functionality
-		//
+
 		m_width = width;
 		m_height = height;
 
@@ -264,12 +251,9 @@ namespace Engine
 
 	void App::OnExit()
 	{
-		// Exit main for loop
-		//
+
 		m_state = GameState::QUIT;
 
-		// Cleanup SDL pointers
-		//
 		CleanupSDL();
 	}
 }
