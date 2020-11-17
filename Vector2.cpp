@@ -37,10 +37,10 @@ namespace Engine
 
         float Vector2::Normalize()
         {
-            // Calculate length
+            
             length = Length();
 
-            //
+            
             float inverseScale = 1.0f / length;
             x *= inverseScale;
             y *= inverseScale;
