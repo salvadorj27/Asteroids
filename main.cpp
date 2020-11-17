@@ -1,6 +1,6 @@
 #include <iostream>
 #include "App.hpp"
-#define VERSION 
+#define version "0.4.0"
 const int WIDTH = 1136;
 const int HEIGHT = 640;
 
