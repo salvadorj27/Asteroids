@@ -9,7 +9,7 @@ const int HEIGHT = 640;
 int main(int argc, char ** argv)
 {
 		
-	Engine::App* app = new Engine::App("Asteroids!!", WIDTH, HEIGHT);	
+	Engine::App* app = new Engine::App("Asteroids!!!", WIDTH, HEIGHT);	
 
 
 	if(!app->Init())
