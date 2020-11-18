@@ -1,15 +1,18 @@
 #include "App.hpp"
-#include <iostream>
 #include <algorithm>
 
 // OpenGL includes
-//#include <GL/glew.h>
+#include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 
+
+#include "Ship.hpp"
+#include "Asteroid.hpp"
+
 namespace Engine
-{
+{	
 	const float DESIRED_FRAME_RATE = 60.0f;
-	const float DESIRED_FRAME_TIME = 1.0f / DESIRED_FRAME_RATE;
+	const float DESIRED_FRAME_TIME = 1.0f / DESIRED_FRAME_RATE;	
 
 	App::App(const std::string& title, const int width, const int height)
 		: m_title(title)
@@ -21,21 +24,30 @@ namespace Engine
 	{
 		m_state = GameState::UNINITIALIZED;
 		m_lastFrameTime = m_timer->GetElapsedTimeInSeconds();
+
+		m_ship = new Engine::Ship(this);
+		// m_asteroid = new Asteroid;
 	}
 
 	App::~App()
 	{
 		CleanupSDL();
 
-        // Removes timer allocation
+        
         delete m_timer;
+
+		
+		delete m_ship;
+
+		// Removes asteroid
+		// delete m_asteroid;
 	}
 
 	void App::Execute()
 	{
 		if (m_state != GameState::INIT_SUCCESSFUL)
 		{
-			std::cerr << "Game INIT was not successful." << std::endl;
+			SDL_Log("Game INIT was not successful.");
 			return;
 		}
 
@@ -44,14 +56,13 @@ namespace Engine
 		SDL_Event event;
 		while (m_state == GameState::RUNNING)
 		{
-			// Input polling
-			//
+		
 			while (SDL_PollEvent(&event))
 			{
 				OnEvent(&event);
 			}
 
-			//
+			
 			Update();
 			Render();
 		}
@@ -59,31 +70,44 @@ namespace Engine
 
 	bool App::Init()
 	{
-		// Init the external dependencies
-		//
+	
 		bool success = SDLInit() && GlewInit();
 		if (!success)
 		{
 			m_state = GameState::INIT_FAILED;
+			SDL_Log("Game INIT failed.");
 			return false;
 		}
 
-		// Setup the viewport
-		//
-		SetupViewport();
+	
+		SetupViewPort();
 
-		// Change game state
-		//
+		
 		m_state = GameState::INIT_SUCCESSFUL;
 
 		return true;
 	}
 
 	void App::OnKeyDown(SDL_KeyboardEvent keyBoardEvent)
-	{		
+	{
+		const float MOVE_UNIT = 15.f;
 		switch (keyBoardEvent.keysym.scancode)
 		{
-		default:			
+		case SDL_SCANCODE_W:
+			SDL_Log("Going up");	
+			m_ship->MoveUp();	
+			break;
+		case SDL_SCANCODE_A:
+			SDL_Log("Going left");
+			m_ship->RotateLeft(DESIRED_FRAME_TIME);
+			break;
+		case SDL_SCANCODE_S:			
+			break;
+		case SDL_SCANCODE_D:
+			SDL_Log("Going right");
+			m_ship->RotateRight(DESIRED_FRAME_TIME);
+			break;
+		default:
 			SDL_Log("%S was pressed.", keyBoardEvent.keysym.scancode);
 			break;
 		}
@@ -97,7 +121,7 @@ namespace Engine
 			OnExit();
 			break;
 		default:
-			//DO NOTHING
+			
 			break;
 		}
 	}
@@ -106,19 +130,17 @@ namespace Engine
 	{
 		double startTime = m_timer->GetElapsedTimeInSeconds();
 
-		// Update code goes here
-		//
+		
+		m_ship->Update(DESIRED_FRAME_TIME);
 
 		double endTime = m_timer->GetElapsedTimeInSeconds();
 		double nextTimeFrame = startTime + DESIRED_FRAME_TIME;
 
 		while (endTime < nextTimeFrame)
 		{
-			// Spin lock
+		
 			endTime = m_timer->GetElapsedTimeInSeconds();
 		}
-
-		//double elapsedTime = endTime - startTime;        
 
 		m_lastFrameTime = m_timer->GetElapsedTimeInSeconds();
 
@@ -130,50 +152,19 @@ namespace Engine
 		glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// glBegin(GL_QUADS);		
-		// 	glVertex2f(50.0, 50.0);
-        //     glVertex2f(50.0, -50.0);
-        //     glVertex2f(-50.0, -50.0);
-        //     glVertex2f(-50.0, 50.0);	
-		// glEnd();
-
-		// glBegin(GL_TRIANGLES);
-		// 	glVertex3f(-50.0, -50.0, 0.0);
-		// 	glVertex3f( 0.0,  50.0, 0.0);
-		// 	glVertex3f( 50.0, -50.0, 0.0);
-		// glEnd();
-
-		// glBegin(GL_LINE_LOOP);
-		// 	glVertex3f(-50.0, -50.0, 0.0);
-		// 	glVertex3f( 0.0,  50.0, 0.0);
-		// 	glVertex3f( 50.0, -50.0, 0.0);
-		// glEnd();
-
-		// glBegin(GL_LINE_LOOP);
-            // glVertex2f(50.0, 50.0);
-            // glVertex2f(50.0, -50.0);
-            // glVertex2f(-50.0, -50.0);
-            // glVertex2f(-50.0, 50.0);			
-		// glEnd();
-
-		glBegin(GL_LINE_LOOP);
-			glVertex2f(0.0, 20.0);
-			glVertex2f( 12.0,  -10.0);
-			glVertex2f( 6.0, -4.0);
-			glVertex2f( -6.0, -4.0);
-			glVertex2f( -12.0, -10.0);
-		glEnd();
-
+		
+		m_ship->Render();
+		// m_asteroid->Render();
+		
 		SDL_GL_SwapWindow(m_mainWindow);
 	}
 
 	bool App::SDLInit()
 	{
-		// Initialize SDL's Video subsystem
-		//
+		
 		if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		{
-			std::cerr << "Failed to init SDL" << std::endl;
+			SDL_Log("Failed to init SDL");
 			return false;
 		}
 
@@ -195,7 +186,7 @@ namespace Engine
 
 		if (!m_mainWindow)
 		{
-			std::cerr << "Failed to create window!" << std::endl;
+			SDL_Log("Failed to create window!");
 			SDL_Quit();
 			return false;
 		}
@@ -203,34 +194,28 @@ namespace Engine
 		m_context = SDL_GL_CreateContext(m_mainWindow);
 		SDL_GL_MakeCurrent(m_mainWindow, m_context);
 
-		// Make double buffer interval synced with vertical scanline refresh
+		
 		SDL_GL_SetSwapInterval(0);
 
 		return true;
 	}
 
-	void App::SetupViewport()
+	void App::SetupViewPort()
 	{
-		// Defining ortho values
-		//
+
 		float halfWidth = m_width * 0.5f;
 		float halfHeight = m_height * 0.5f;
 
-		// Set viewport to match window
-		//
+
 		glViewport(0, 0, m_width, m_height);
 
-		// Set Mode to GL_PROJECTION
-		//
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		// Set projection MATRIX to ORTHO
-		//
+
 		glOrtho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1);
 
-		// Setting Mode to GL_MODELVIEW
-		//
+
 		glMatrixMode(GL_MODELVIEW);
 	}
 
@@ -248,8 +233,6 @@ namespace Engine
 
 	void App::CleanupSDL()
 	{
-		// Cleanup
-		//
 		SDL_GL_DeleteContext(m_context);
 		SDL_DestroyWindow(m_mainWindow);
 
@@ -258,22 +241,18 @@ namespace Engine
 
 	void App::OnResize(int width, int height)
 	{
-		// TODO: Add resize functionality
-		//
+
 		m_width = width;
 		m_height = height;
 
-		SetupViewport();
+		SetupViewPort();
 	}
 
 	void App::OnExit()
 	{
-		// Exit main for loop
-		//
+
 		m_state = GameState::QUIT;
 
-		// Cleanup SDL pointers
-		//
 		CleanupSDL();
 	}
 }
