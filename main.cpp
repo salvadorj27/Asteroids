@@ -1,3 +1,5 @@
+// C++ STL
+#include <cassert>
 #include <iostream>
 #include "App.hpp"
 #define version "0.4.0";

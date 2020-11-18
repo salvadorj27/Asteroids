@@ -233,7 +233,6 @@ namespace Engine
 
 	void App::CleanupSDL()
 	{
-
 		SDL_GL_DeleteContext(m_context);
 		SDL_DestroyWindow(m_mainWindow);
 
