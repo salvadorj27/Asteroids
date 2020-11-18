@@ -6,11 +6,7 @@ const int HEIGHT = 640;
 
 int main(int argc, char ** argv)
 {
-	const std::string version("v0.4.0");
-	const char* data = version.data();
-	std::cout << "Version: " << version.data() << std::endl;
-	
-	
+		
 	Engine::App* app = new Engine::App("Asteroids!!", WIDTH, HEIGHT);	
 
 
