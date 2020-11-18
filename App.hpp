@@ -7,7 +7,7 @@
 #include <string>
 #include <list>
 
-//
+
 #include "SDLEvent.hpp"
 #include "TimeManager.hpp"
 
