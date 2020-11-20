@@ -26,6 +26,7 @@ namespace Engine
         void RotateRight(float deltaTime);
         void Update(float deltaTime);
         void Render();
+        void ShipRespawn();
 
     private:
  
@@ -40,6 +41,7 @@ namespace Engine
         float m_rotation;
         float m_currentSpeed;
         App* m_parent;
+        int m_second_ship;
     };
 } 
 #endif
