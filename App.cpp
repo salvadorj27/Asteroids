@@ -107,6 +107,12 @@ namespace Engine
 			SDL_Log("Going right");
 			m_ship->RotateRight(DESIRED_FRAME_TIME);
 			break;
+		case SDL_SCANCODE_M:
+			m_ship->ChangeShip();
+			break;
+		case SDL_SCANCODE_P:
+			m_ship->ShipRespawn();
+			break;
 		default:
 			SDL_Log("%S was pressed.", keyBoardEvent.keysym.scancode);
 			break;
