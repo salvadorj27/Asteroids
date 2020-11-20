@@ -20,7 +20,7 @@ namespace Engine
             float SquaredLength() const;
             float Normalize();
 
-
+            static constexpr float PI = 3.141592653;
             float x;
             float y;
             float length;

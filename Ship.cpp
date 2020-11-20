@@ -1,8 +1,7 @@
 #include "Ship.hpp"
 #include "App.hpp"
-
+#include "Wrap.hpp"
 #include <gl\GL.h>
-
 
 #include <iostream>
 #include <cmath>
@@ -10,20 +9,6 @@
 namespace Engine
 {
     
-    const float PI = 3.141592653;
-    const float MAX_VELOCITY = 500.0f;
-    const float THRUST = 15.0f;
-    const float DRAG_FORCE = 0.999f;
-    const float ANGLE_OFFSET = 90.0f;
-
-    
-    inline float wrap(float x, float min, float max)
-    {
-        if(x < min) return max - (min - x);
-        if(x > max) return min + (x - max);
-        return x;
-    }
-
     Ship::Ship(App* parent)
         : m_position(Math::Vector2::Origin)   
         , m_velocity(Math::Vector2::Origin)  
@@ -77,8 +62,8 @@ namespace Engine
     {
         if(m_mass > 0)
         {
-            m_velocity.x += (impulse.x / m_mass) * cosf((m_angle + ANGLE_OFFSET) * (PI / 180));
-            m_velocity.y += (impulse.y / m_mass) * sinf((m_angle + ANGLE_OFFSET) * (PI / 180));
+            m_velocity.x += (impulse.x / m_mass) * cosf((m_angle + ANGLE_OFFSET) * (Engine::Math::Vector2::PI / 180));
+            m_velocity.y += (impulse.y / m_mass) * sinf((m_angle + ANGLE_OFFSET) * (Engine::Math::Vector2::PI / 180));
         }
     }
 
@@ -119,22 +104,46 @@ namespace Engine
 
     void Ship::ChangeShip()
     {
-        m_points.push_back(Math::Vector2(12.0f, 0.0f));
-        m_points.push_back(Math::Vector2(12.0f, 51.0f));
-        m_points.push_back(Math::Vector2(39.0f, -9.0f));
-        m_points.push_back(Math::Vector2(39.0f, -24.0f));
-        m_points.push_back(Math::Vector2(12.0f, -36.0f));
-        m_points.push_back(Math::Vector2(-12.0f, -36.0f));
-        m_points.push_back(Math::Vector2(-39.0f, -24.0f));
-        m_points.push_back(Math::Vector2(-39.0f, -9.0f));
-        m_points.push_back(Math::Vector2(-12.0f, 51.0f));
-        m_points.push_back(Math::Vector2(-12.0f, 0.0f));
-        m_points.push_back(Math::Vector2(-6.0f, 0.0f));
-        m_points.push_back(Math::Vector2(-6.0f, 6.0f));
-        m_points.push_back(Math::Vector2(-3.0f, 4.5f));
-        m_points.push_back(Math::Vector2(3.0f, 4.5f));
-        m_points.push_back(Math::Vector2(6.0f, 6.0f));
-        m_points.push_back(Math::Vector2(6.0f, 0.0f));
+        m_second_ship = ++m_second_ship % 2;
+        m_points.clear();
+
+        switch(m_second_ship)
+        {
+        case 1:
+            m_points.push_back(Math::Vector2(12.0f, 0.0f));
+            m_points.push_back(Math::Vector2(12.0f, 51.0f));
+            m_points.push_back(Math::Vector2(39.0f, -9.0f));
+            m_points.push_back(Math::Vector2(39.0f, -24.0f));
+            m_points.push_back(Math::Vector2(12.0f, -36.0f));
+            m_points.push_back(Math::Vector2(-12.0f, -36.0f));
+            m_points.push_back(Math::Vector2(-39.0f, -24.0f));
+            m_points.push_back(Math::Vector2(-39.0f, -9.0f));
+            m_points.push_back(Math::Vector2(-12.0f, 51.0f));
+            m_points.push_back(Math::Vector2(-12.0f, 0.0f));
+            m_points.push_back(Math::Vector2(-6.0f, 0.0f));
+            m_points.push_back(Math::Vector2(-6.0f, 6.0f));
+            m_points.push_back(Math::Vector2(-3.0f, 4.5f));
+            m_points.push_back(Math::Vector2(3.0f, 4.5f));
+            m_points.push_back(Math::Vector2(6.0f, 6.0f));
+            m_points.push_back(Math::Vector2(6.0f, 0.0f));
+            break;
+        default:
+             m_points.push_back(Math::Vector2(9.0f, 0.0f));
+            m_points.push_back(Math::Vector2(18.0f, 9.0f));
+            m_points.push_back(Math::Vector2(18.0f, 36.0f));
+            m_points.push_back(Math::Vector2(54.0f, -45.0f));
+            m_points.push_back(Math::Vector2(18.0f, -36.0f));
+            m_points.push_back(Math::Vector2(18.0f, -45.0f));
+            m_points.push_back(Math::Vector2(0.0f, -36.0f));
+            m_points.push_back(Math::Vector2(-18.0f, -45.0f));
+            m_points.push_back(Math::Vector2(-18.0f, -36.0f));
+            m_points.push_back(Math::Vector2(-54.0f, -45.0f));
+            m_points.push_back(Math::Vector2(-18.0f, 36.0f));
+            m_points.push_back(Math::Vector2(-18.0f, 9.0f));
+            m_points.push_back(Math::Vector2(-9.0f, 0.0f));
+            m_points.push_back(Math::Vector2(0.0f, 18.0f));
+            break;
+        }
     }
 
     void Ship::Render()
@@ -150,4 +159,18 @@ namespace Engine
             }
         glEnd();
     }
+    void Ship::ShipRespawn()
+    {
+        m_position.x = 0.0f;
+        m_position.y = 0.0f;
+        m_velocity.x = 0.0f;
+        m_velocity.y = 0.0f;
+        m_angle = 0.0f;
+        
+        glLoadIdentity();
+        glTranslatef(m_position.x, m_position.y, 0.0);
+        glRotatef(m_angle, 0.0f, 0.0f, 1.0f);
+        glBegin(GL_LINE_LOOP);
+    }
+
 }
