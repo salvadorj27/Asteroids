@@ -1,6 +1,6 @@
 #include "Ship.hpp"
 #include "App.hpp"
-#include "Wrap.hpp"
+//#include "Wrap.hpp"
 #include <gl\GL.h>
 
 #include <iostream>
@@ -8,7 +8,18 @@
 
 namespace Engine
 {
-    
+    const float MAX_VELOCITY = 500.0F;
+    const float THRUST = 15.0F;
+    const float DRAG_FORCE = 0.999F;
+    const float ANGLE_OFFSET = 90.0F;
+
+    inline float wrap(float x, float min, float max)
+    {
+        if(x < min) return max - (min - x);
+        if(x > max) return min + (x - max);
+        return x;
+    }
+
     Ship::Ship(App* parent)
         : m_position(Math::Vector2::Origin)   
         , m_velocity(Math::Vector2::Origin)  
@@ -109,6 +120,7 @@ namespace Engine
 
         switch(m_second_ship)
         {
+
         case 1:
             m_points.push_back(Math::Vector2(12.0f, 0.0f));
             m_points.push_back(Math::Vector2(12.0f, 51.0f));
