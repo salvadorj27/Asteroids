@@ -13,6 +13,8 @@
 
 namespace Engine
 {
+    class GameObject;
+    class Bullet;
     class Ship;
     class Asteroid;
     class App : public SDLEvent
@@ -53,6 +55,10 @@ namespace Engine
             void OnKeyDown       ( SDL_KeyboardEvent keyBoardEvent ) override;
             void OnKeyUp         ( SDL_KeyboardEvent keyBoardEvent ) override;
 
+            void CleanGameObjects();
+            void CreateBullet();
+            void DestroyGameObject(Engine::GameObject* object);
+
             int                  m_width;
 		    int					 m_height;
 		    int					 m_nUpdates;
@@ -65,6 +71,8 @@ namespace Engine
             Engine::Ship*        m_ship;
             Engine::Asteroid*    m_asteroid;
             Engine::Ship*        m_second_ship;
+            std::list< Engine::GameObject* > m_objects;
+            std::list< Engine::Bullet* > m_bullets;
     };
 }
 
