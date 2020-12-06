@@ -2,21 +2,21 @@
 
 #ifndef ASTEROID_HPP
 #define ASTEROID_HPP
+#include "GameObject.hpp"
 
-// STL
 #include <vector>
 
 #include "Vector2.hpp"
 
 namespace Engine
-{
-    class Asteroid
+{   class App;
+    class Asteroid : public GameObject
     {
         public:
-            Asteroid();
-            void Render();
+            Asteroid(App* parent);
+            void Update(float deltaTime);
         private:
-            std::vector<Engine::Math::Vector2> m_points;
+            App* m_parent;
     };
-} // namespace Engine
+} 
 #endif
