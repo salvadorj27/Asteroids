@@ -9,8 +9,8 @@
 
 namespace Engine
 {
-    Bullet::Bullet(App* parent)
-        : GameObject(1.0f, 0.0f, 0.0f)
+     Bullet::Bullet(App *parent)
+        : GameObject(1.0f, 1.0f, 0.0f, 0.0f)
         , m_parent(parent)
         , m_lifeSpan(120.0f)
         , m_currentLifeSpan(0.0f)
@@ -32,11 +32,12 @@ namespace Engine
 
     void Bullet::Render()
     {
+        GameObject::DrawCircle(m_position.x, m_position.y, m_radius, 64);
         glLoadIdentity();
         glPointSize(2.0f);
         glEnable(GL_POINT_SMOOTH);
         glBegin(GL_POINTS);
-            glVertex2f(m_position.x, m_position.y);
+        glVertex2f(m_position.x, m_position.y);
         glEnd();
     }
 }
