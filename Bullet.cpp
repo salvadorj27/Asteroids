@@ -5,7 +5,6 @@
 
 #include "App.hpp"
 
-#include <iostream>
 
 namespace Engine
 {
