@@ -5,8 +5,6 @@
 
 #include "App.hpp"
 
-#include <iostream>
-
 namespace Engine
 {
      Bullet::Bullet(App *parent)

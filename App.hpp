@@ -2,7 +2,6 @@
 
 #ifndef APP_HPP
 #define APP_HPP
-
 // C++ STL
 #include <string>
 #include <list>
