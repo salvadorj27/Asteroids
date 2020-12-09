@@ -221,6 +221,12 @@ namespace Engine
 		}
 	}
 
+	void App::RespawnShip()
+	{
+		m_ship = new Engine::Ship(this);
+		m_objects.push_back(m_ship);
+	}
+
 	void App::UpdateScore(int delta)
 	{
 		m_score += delta;
@@ -251,6 +257,10 @@ namespace Engine
 			break;
 		case SDL_SCANCODE_P:
 			m_ship->ShipRespawn();
+			break;
+		case SDL_SCANCODE_R:
+			SDL_Log("Restart");
+			RespawnShip();
 			break;
 		case SDL_SCANCODE_SPACE:
 			SDL_Log("Shooting!");

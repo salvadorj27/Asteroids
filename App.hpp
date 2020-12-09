@@ -63,6 +63,7 @@ namespace Engine
             void CreateDebris(Engine::Asteroid *object);
             void CheckCollision();
             void DestroyGameObject(Engine::GameObject* object);
+            void RespawnShip();
 
             int                  m_width;
 		    int					 m_height;
