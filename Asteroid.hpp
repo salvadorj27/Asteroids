@@ -1,4 +1,5 @@
 #pragma once
+
 #ifndef ASTEROID_HPP
 #define ASTEROID_HPP
 #include "GameObject.hpp"

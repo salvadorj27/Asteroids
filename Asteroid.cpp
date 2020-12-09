@@ -4,7 +4,6 @@
 #include <cmath>
 #include <cstdlib>
 
-
 namespace Engine
 {
     const size_t NUM_POINTS = 16;

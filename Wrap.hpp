@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifndef _Wrap_HPP
 #define _Wrap_HPP
 

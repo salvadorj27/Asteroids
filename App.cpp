@@ -1,5 +1,4 @@
 #include "App.hpp"
-
 #include <algorithm>
 #include <cstdlib>
 

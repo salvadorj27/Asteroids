@@ -1,4 +1,5 @@
 #include "Ship.hpp"
+
 #include "App.hpp"
 
 #include <gl\GL.h>
