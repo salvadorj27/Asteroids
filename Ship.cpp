@@ -1,28 +1,26 @@
 #include "Ship.hpp"
+
 #include "App.hpp"
-//#include "Wrap.hpp"
+
 #include <gl\GL.h>
 #include <cmath>
 #include "Bullet.hpp"
+#include "Wrap.hpp"
 
 namespace Engine
 {
-    const float MAX_VELOCITY = 500.0F;
-    const float THRUST = 15.0F;
-    const float DRAG_FORCE = 0.999F;
-    const float ANGLE_OFFSET = 90.0F;
-    const float BULLET_SPEED = 250;
 
-     Ship::Ship(App* parent)
-        : GameObject(1.0f, 0.0f, 250.0f)
-        , m_parent(parent) 
+    Ship::Ship(App* parent)
+    	: GameObject(1.0f, RADIUS, 0.0f, 250.0f)
+        , m_parent(parent)
+
     {        
         std::cout << "Construction of ship\n";
         ChangeShip();
     }
 
     Ship::Ship(App* parent, float _x, float _y)
-        : GameObject(1.0f, 0.0f, 250.0f)
+        : GameObject(1.0f, RADIUS, 0.0f, 250.0f)
         , m_parent(parent)
     {
         m_position = Math::Vector2(_x, _y);

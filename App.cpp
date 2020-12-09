@@ -1,19 +1,29 @@
 #include "App.hpp"
 #include <algorithm>
+#include <cstdlib>
 
-// OpenGL includes
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 
 #include "GameObject.hpp"
 #include "Bullet.hpp"
 #include "Ship.hpp"
-#include "Asteroid.hpp"
+//#include "Asteroid.hpp"
 
 namespace Engine
 {	
 	const float DESIRED_FRAME_RATE = 60.0f;
-	const float DESIRED_FRAME_TIME = 1.0f / DESIRED_FRAME_RATE;	
+	const float DESIRED_FRAME_TIME = 1.0f / DESIRED_FRAME_RATE;
+	
+	bool up = false;
+	bool left = false;
+	bool right = false;
+	int m_dimensions[2];
+
+	inline float randInRange(float min, float max)
+	{
+		return min + (max - min) * (rand() / static_cast<float>(RAND_MAX));
+	}
 
 	App::App(const std::string& title, const int width, const int height)
 		: m_title(title)
@@ -22,12 +32,14 @@ namespace Engine
 		, m_nUpdates(0)
 		, m_timer(new TimeManager)
 		, m_mainWindow(nullptr)
+		, m_score(0)
 	{
 		m_state = GameState::UNINITIALIZED;
 		m_lastFrameTime = m_timer->GetElapsedTimeInSeconds();
 
 		m_ship = new Engine::Ship(this);
-		m_asteroid = new Engine::Asteroid(this);
+		m_dimensions[0] = m_width;
+		m_dimensions[1] = m_height;
 	}
 
 	App::~App()
@@ -54,6 +66,7 @@ namespace Engine
 
 		m_state = GameState::RUNNING;
 
+		CreateAsteroid(Engine::Asteroid::AsteroidSize::BIG, 1, 0, 0);
 		SDL_Event event;
 		while (m_state == GameState::RUNNING)
 		{
@@ -99,15 +112,86 @@ namespace Engine
 	void App::CleanGameObjects()
 	{
 		auto iter = std::find_if(m_objects.begin(), m_objects.end(),
-			[&](Engine::GameObject* entity) { return entity->IsDisappearing(); });
+		[&](Engine::GameObject *entity) { return entity->IsDisappearing() || entity->IsColliding(); });
 		
 		if(iter != m_objects.end())
 		{
 			
-			SDL_Log("Bullet should be deleted!");
+			//SDL_Log("Entity will be deleted!");
 			DestroyGameObject(*iter);
+			std::cout << "Your score is:  " << m_score << std::endl;
+
+			//m_ship->Respawn();
 		}
-	}	
+	}
+
+	void App::CheckCollision()
+	{
+		for (std::list<Engine::Asteroid *>::iterator asteroid = m_asteroids.begin(); asteroid != m_asteroids.end(); ++asteroid)
+		{
+			auto currentAsteroid = (*asteroid);
+			if (currentAsteroid->CouldCollide() && m_ship->CouldCollide())
+			{
+				if (m_ship->DetectCollision(currentAsteroid))
+				{
+					CreateDebris(currentAsteroid);
+				}
+
+				for (std::list<Engine::Bullet *>::iterator bullet = m_bullets.begin(); bullet != m_bullets.end(); ++bullet)
+				{
+					auto currentBullet = (*bullet);
+					if (currentBullet->CouldCollide() && currentAsteroid->CouldCollide())
+					{
+						if (currentAsteroid->DetectCollision(currentBullet))
+						{
+							UpdateScore(10);
+							CreateDebris(currentAsteroid);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	void App::CreateAsteroid(Asteroid::AsteroidSize::Size size, int amount, float x, float y)
+	{
+		for (int idx = 0; idx < amount; ++idx)
+		{
+			Engine::Asteroid *pAsteroid = new Engine::Asteroid(size, this);
+			m_objects.push_back(pAsteroid);
+			m_asteroids.push_back(pAsteroid);
+
+			if (x == 0 && y == 0)
+			{
+				const int sideAxis = rand() & 1;
+				const float sideDir = (rand() & 1) ? 1.0f : -1.0f;
+
+				const int otherSideAxis = (sideAxis + 1) & 1;
+				float point[2];
+				point[sideAxis] = sideDir * m_dimensions[sideAxis] * 0.5f;
+				point[otherSideAxis] = randInRange(m_dimensions[otherSideAxis] * -0.5f, m_dimensions[otherSideAxis] * 0.5f);
+
+				pAsteroid->Teleport(point[0], point[1]);
+			}
+			else
+			{
+				pAsteroid->Teleport(x, y);
+			}
+		}
+	}
+
+	void App::CreateDebris(Engine::Asteroid *object)
+	{
+		auto currentAsteroid = object; //dynamic_cast<Engine::Asteroid *>(object);
+		if (currentAsteroid != nullptr &&
+			currentAsteroid->GetSize() != Engine::Asteroid::AsteroidSize::SMALL)
+		{
+			auto newSize =
+				(currentAsteroid->GetSize() == Engine::Asteroid::AsteroidSize::BIG) ? Engine::Asteroid::AsteroidSize::MEDIUM : Engine::Asteroid::AsteroidSize::SMALL;
+
+			CreateAsteroid(newSize, 2, currentAsteroid->GetPosition().x, currentAsteroid->GetPosition().y);
+		}
+	}
 
 	void App::DestroyGameObject(Engine::GameObject* object)
 	{
@@ -116,7 +200,7 @@ namespace Engine
 		
 		auto gameObjectResult = std::find(m_objects.begin(), m_objects.end(), object);
 		auto bulletResult = std::find(m_bullets.begin(), m_bullets.end(), object);
-
+		auto asteroidResult = std::find(m_asteroids.begin(), m_asteroids.end(), object);
 	
 		delete object;
 
@@ -126,10 +210,21 @@ namespace Engine
 			m_objects.erase(gameObjectResult);
 		}
 
+		if (m_asteroids.size() > 0 && asteroidResult != m_asteroids.end())
+		{
+			m_asteroids.erase(asteroidResult);
+		}
+
 		if(m_bullets.size() > 0 && bulletResult != m_bullets.end())
 		{
 			m_bullets.erase(bulletResult);
 		}
+	}
+
+	void App::UpdateScore(int delta)
+	{
+		m_score += delta;
+		std::cout << "Tu puntuacion es: " << m_score << std::endl;
 	}
 
 	void App::OnKeyDown(SDL_KeyboardEvent keyBoardEvent)
@@ -186,7 +281,14 @@ namespace Engine
 
 		
 		m_ship->Update(DESIRED_FRAME_TIME);
-		m_asteroid->Update(DESIRED_FRAME_TIME);
+
+		
+		std::list<Engine::Asteroid *>::iterator obj = m_asteroids.begin();
+		while (obj != m_asteroids.end())
+		{
+			(*obj)->Update(DESIRED_FRAME_TIME);
+			++obj;
+		}
 
 		std::list< Engine::Bullet* >::iterator ait = m_bullets.begin();
 		while(ait != m_bullets.end())
@@ -195,6 +297,7 @@ namespace Engine
 			++ait;
 		}
 
+		CheckCollision();
 		CleanGameObjects();
 
 		double endTime = m_timer->GetElapsedTimeInSeconds();
@@ -217,8 +320,20 @@ namespace Engine
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		
-		m_ship->Render();
-		m_asteroid->Render();
+		if (m_ship->CouldCollide())
+			m_ship->Render();
+
+		std::list<Engine::GameObject *>::iterator ait = m_objects.begin();
+		while (ait != m_objects.end())
+		{
+			auto currentObject = (*ait);
+			if (currentObject->CouldCollide())
+			{
+				currentObject->Render();
+			}
+
+			++ait;
+		}
 
 		std::list< Engine::Bullet* >::iterator bull = m_bullets.begin();
 		while(bull != m_bullets.end())
