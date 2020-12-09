@@ -9,14 +9,27 @@
 #include "Vector2.hpp"
 
 namespace Engine
-{   class App;
+{   
+    class App;
     class Asteroid : public GameObject
     {
-        public:
-            Asteroid(App* parent);
-            void Update(float deltaTime);
+    public:
+        struct AsteroidSize
+        {
+            enum Size
+            {
+                BIG = 0,
+                MEDIUM = 1,
+                SMALL = 2
+            };
+        };
+        Asteroid(AsteroidSize::Size size, App *parent);
+        void Update(float deltaTime);
+        inline AsteroidSize::Size GetSize() { return m_size; }
+
         private:
             App* m_parent;
+            AsteroidSize::Size m_size;
     };
 } 
 #endif

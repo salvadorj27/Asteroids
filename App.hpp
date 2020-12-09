@@ -10,6 +10,7 @@
 
 #include "SDLEvent.hpp"
 #include "TimeManager.hpp"
+#include "Asteroid.hpp"
 
 namespace Engine
 {
@@ -54,9 +55,13 @@ namespace Engine
             void OnExit          ( ) override;
             void OnKeyDown       ( SDL_KeyboardEvent keyBoardEvent ) override;
             void OnKeyUp         ( SDL_KeyboardEvent keyBoardEvent ) override;
+            void UpdateScore(int delta);
 
             void CleanGameObjects();
             void CreateBullet();
+            void CreateAsteroid(Engine::Asteroid::AsteroidSize::Size size, int amount, float x, float y);
+            void CreateDebris(Engine::Asteroid *object);
+            void CheckCollision();
             void DestroyGameObject(Engine::GameObject* object);
 
             int                  m_width;
@@ -73,6 +78,8 @@ namespace Engine
             Engine::Ship*        m_second_ship;
             std::list< Engine::GameObject* > m_objects;
             std::list< Engine::Bullet* > m_bullets;
+            std::list<Engine::Asteroid *> m_asteroids;
+            int m_score;
     };
 }
 
