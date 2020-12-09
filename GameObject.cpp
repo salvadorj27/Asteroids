@@ -117,7 +117,6 @@ GameObject::GameObject(float mass, float radius, float angle, float rotation)
         glLoadIdentity();
         glTranslatef(m_position.x, m_position.y, 0.f);
         glRotatef(m_angle, 0.0f, 0.0f, 1.0f);
-
         glBegin(GL_LINE_LOOP);
         std::vector<Engine::Math::Vector2>::iterator it = m_points.begin();
         for (; it != m_points.end(); ++it)
@@ -134,7 +133,6 @@ GameObject::GameObject(float mass, float radius, float angle, float rotation)
             glLoadIdentity();
             glTranslatef(m_position.x, m_position.y, 0.f);
             glRotatef(m_angle, 0.0f, 0.0f, 1.0f);
-
             glBegin(GL_LINE_LOOP);
             std::vector<Engine::Math::Vector2>::iterator it = m_points.begin();
             for (; it != m_points.end(); ++it)
